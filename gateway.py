@@ -75,6 +75,7 @@ def readSerial():
                 mess = mess[end+1:]
 
 client.loop_start()
+
 while True:
     readSerial()
     time.sleep(1)
