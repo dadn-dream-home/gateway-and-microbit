@@ -2,40 +2,36 @@ import serial.tools.list_ports
 import random
 import time
 import  sys
-from  Adafruit_IO import  MQTTClient
+import paho.mqtt.client as mqtt
 
-AIO_FEED_ID =  ["humi", "temp", "fan", "lamp"]
-AIO_USERNAME = "Guts99"
-AIO_KEY = "aio_srig869x8HXGGMvdwLapWDW88l2a"
+mqtt_broker = "localhost"
+mqtt_port = 1883
+mqtt_topic = ["humi", "temp", "fan", "led"]
 
-def  connected(client):
+def  connected(client, userdata, flags, rc):
     print("Ket noi thanh cong...")
-    for feed in AIO_FEED_ID :
+    for feed in mqtt_topic :
         client.subscribe(feed)
 
-def  subscribe(client , userdata , mid , granted_qos):
-    print("Subcribe thanh cong...")
 
 def  disconnected(client):
     print("Ngat ket noi...")
     sys.exit (1)
 
-def  message(client , feed_id , payload):
+def  message(client, userdata, msg):
     #print("Nhan du lieu: " + feed_id + payload)
-    if(feed_id == "fan"):
-        print("Nhan du lieu fan: " + payload)
-        ser.write(("FAN:" + str(payload)).encode())
-    if (feed_id == "lamp"):
-        print("Nhan du lieu lamp: " + payload)
-        ser.write(("LAMP:" + str(payload)).encode())
+    if(msg.topic == "fan"):
+        print("Nhan du lieu fan: " + msg.payload)
+        ser.write(("FAN:" + str(msg.payload)).encode())
+    if (msg.topic == "lamp"):
+        print("Nhan du lieu lamp: " + msg.payload)
+        ser.write(("LAMP:" + str(msg.payload)).encode())
 
-client = MQTTClient(AIO_USERNAME , AIO_KEY)
+client = mqtt.Client()
 client.on_connect = connected
 client.on_disconnect = disconnected
 client.on_message = message
-client.on_subscribe = subscribe
-client.connect()
-client.loop_background()
+client.connect(mqtt_broker, mqtt_port, 60)
 
 def getPort():
     ports = serial.tools.list_ports.comports()
@@ -78,6 +74,7 @@ def readSerial():
             else:
                 mess = mess[end+1:]
 
+client.loop_start()
 while True:
     readSerial()
     time.sleep(1)
