@@ -10,8 +10,11 @@ mqtt_topic = ["humi", "temp", "fan", "led"]
 
 def  connected(client, userdata, flags, rc):
     print("Ket noi thanh cong...")
+    client.subscribe("fan")
+    client.subscribe("lamp")
     for feed in mqtt_topic :
         client.subscribe(feed)
+        print("Ket noi thanh cong...")
 
 
 def  disconnected(client):
@@ -19,12 +22,12 @@ def  disconnected(client):
     sys.exit (1)
 
 def  message(client, userdata, msg):
-    #print("Nhan du lieu: " + feed_id + payload)
+    print("Nhan du lieu: " + msg.topic + " " + str(msg.payload.decode()))
     if(msg.topic == "fan"):
-        print("Nhan du lieu fan: " + msg.payload)
+        print("Nhan du lieu fan: " + str(msg.payload.decode()))
         ser.write(("FAN:" + str(msg.payload)).encode())
-    if (msg.topic == "lamp"):
-        print("Nhan du lieu lamp: " + msg.payload)
+    if (msg.topic == "led"):
+        print("Nhan du lieu led: " + str(msg.payload.decode()))
         ser.write(("LAMP:" + str(msg.payload)).encode())
 
 client = mqtt.Client()
@@ -75,7 +78,7 @@ def readSerial():
                 mess = mess[end+1:]
 
 client.loop_start()
-
 while True:
+    print("a")
     readSerial()
     time.sleep(1)
