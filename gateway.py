@@ -11,7 +11,7 @@ mqtt_topic = ["humi", "temp", "fan", "led"]
 def  connected(client, userdata, flags, rc):
     print("Ket noi thanh cong...")
     client.subscribe("fan")
-    client.subscribe("lamp")
+    client.subscribe("led")
     for feed in mqtt_topic :
         client.subscribe(feed)
         print("Ket noi thanh cong...")
@@ -25,10 +25,10 @@ def  message(client, userdata, msg):
     print("Nhan du lieu: " + msg.topic + " " + str(msg.payload.decode()))
     if(msg.topic == "fan"):
         print("Nhan du lieu fan: " + str(msg.payload.decode()))
-        ser.write(("FAN:" + str(msg.payload)).encode())
+        ser.write(("!set_fan:" + str(msg.payload.decode()) + "#").encode())
     if (msg.topic == "led"):
         print("Nhan du lieu led: " + str(msg.payload.decode()))
-        ser.write(("LAMP:" + str(msg.payload)).encode())
+        ser.write(("!set_led:" + str(msg.payload.decode()) + "#").encode())
 
 client = mqtt.Client()
 client.on_connect = connected
@@ -57,9 +57,11 @@ def processData(data):
     splitData = data.split(":")
     print(splitData)
     if splitData[0] == "TEMP":
+        time.sleep(0.3)
         client.publish("temp", splitData[1])
-    if splitData[2] == "HUMI":
-        client.publish("humi", splitData[3])
+    if splitData[0] == "HUMI":
+        time.sleep(0.3)
+        client.publish("humi", splitData[1])
 
 
 mess = ""
